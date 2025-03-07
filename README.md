@@ -39,7 +39,7 @@ We'll create Book.cs and User.cs inside the Models/ folder.
 
 using System.ComponentModel.DataAnnotations;
 
-namespace LibraryAPI.Models
+namespace LibraryManagement.Models
 {
     public class Book
     {
@@ -64,7 +64,7 @@ namespace LibraryAPI.Models
 
 using System.ComponentModel.DataAnnotations;
 
-namespace LibraryAPI.Models
+namespace LibraryManagement.Models
 {
     public class User
     {
@@ -85,7 +85,7 @@ DTOs help in decoupling the database model from the API responses.
 
 📂 DTOs/BookDTO.cs
 
-namespace LibraryAPI.DTOs
+namespace LibraryManagement.DTOs
 {
     public class BookDTO
     {
@@ -99,7 +99,7 @@ namespace LibraryAPI.DTOs
 
 📂 DTOs/UserDTO.cs
 
-namespace LibraryAPI.DTOs
+namespace LibraryManagement.DTOs
 {
     public class UserDTO
     {
@@ -117,9 +117,9 @@ We'll create AppDbContext.cs in the Data/ folder.
 📂 Data/AppDbContext.cs
 
 using Microsoft.EntityFrameworkCore;
-using LibraryAPI.Models;
+using LibraryManagement.Models;
 
-namespace LibraryAPI.Data
+namespace LibraryManagement.Data
 {
     public class AppDbContext : DbContext
     {
@@ -150,12 +150,12 @@ We'll have two controllers:
 📂 Controllers/BookController.cs
 
 using Microsoft.AspNetCore.Mvc;
-using LibraryAPI.Data;
-using LibraryAPI.Models;
-using LibraryAPI.DTOs;
+using LibraryManagement.Data;
+using LibraryManagement.Models;
+using LibraryManagement.DTOs;
 using Microsoft.EntityFrameworkCore;
 
-namespace LibraryAPI.Controllers
+namespace LibraryManagement.Controllers
 {
     [ApiController]
     [Route("api/books")]
@@ -229,12 +229,12 @@ namespace LibraryAPI.Controllers
 📂 Controllers/UserController.cs
 
 using Microsoft.AspNetCore.Mvc;
-using LibraryAPI.Data;
-using LibraryAPI.Models;
-using LibraryAPI.DTOs;
+using LibraryManagement.Data;
+using LibraryManagement.Models;
+using LibraryManagement.DTOs;
 using Microsoft.EntityFrameworkCore;
 
-namespace LibraryAPI.Controllers
+namespace LibraryManagement.Controllers
 {
     [ApiController]
     [Route("api/users")]
@@ -275,7 +275,7 @@ namespace LibraryAPI.Controllers
 
 📂 Program.cs
 
-using LibraryAPI.Data;
+using LibraryManagement.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
