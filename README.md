@@ -1,43 +1,55 @@
-📌 Switching to SQLite & Using DTOs in .NET 8 Web API
+Got it! We'll refactor everything to use a one-to-many relationship where a User can have multiple Books, and the Book table will contain a UserId field to track who borrowed it.
 
-We'll be building a Library Management System using SQLite and DTOs (Data Transfer Objects) for better data handling.
+This approach simplifies the design by removing the BorrowedBook table and directly managing book borrowing within the Book entity.
 
 
 ---
 
-📌 Step 1: Install Required Packages
+Steps to Set Up the Project
 
-Run the following command in the terminal to install the necessary dependencies:
+1. Create the .NET 8 Web API Project
+
+dotnet new webapi -n LibraryManagement
+cd LibraryManagement
+
+
+2. Install Entity Framework Core & SQLite Provider
 
 dotnet add package Microsoft.EntityFrameworkCore.Sqlite
 dotnet add package Microsoft.EntityFrameworkCore.Design
-dotnet add package Swashbuckle.AspNetCore
+
+
 
 
 ---
 
-📌 Step 2: Create the Database (SQLite)
+Project Structure
 
-We'll modify appsettings.json to use SQLite.
-
-appsettings.json
-
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Data Source=library.db"
-  }
-}
+LibraryManagement/
+│── Controllers/
+│   ├── BooksController.cs
+│   ├── UsersController.cs
+│── Data/
+│   ├── AppDbContext.cs
+│── DTOs/
+│   ├── BookDTO.cs
+│   ├── UserDTO.cs
+│── Models/
+│   ├── Book.cs
+│   ├── User.cs
+│── Program.cs
+│── appsettings.json
+│── LibraryManagement.csproj
 
 
 ---
 
-📌 Step 3: Define the Models
+1️⃣ Models
 
-We'll create Book.cs and User.cs inside the Models/ folder.
-
-📂 Models/Book.cs
+Book.cs
 
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LibraryManagement.Models
 {
@@ -45,24 +57,33 @@ namespace LibraryManagement.Models
     {
         [Key]
         public int Id { get; set; }
+        
+        [Required]
+        public string Title { get; set; }
 
         [Required]
-        public string Title { get; set; } = string.Empty;
+        public string Author { get; set; }
 
-        [Required]
-        public string Author { get; set; } = string.Empty;
-
-        [Required]
+        public string Publisher { get; set; }
+        public string Genre { get; set; }
+        
         public bool IsAvailable { get; set; } = true;
+
+        // Foreign Key for User (Nullable because the book can be unassigned)
+        public int? UserId { get; set; }
+
+        [ForeignKey("UserId")]
+        public User? User { get; set; }
     }
 }
 
 
 ---
 
-📂 Models/User.cs
+User.cs
 
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace LibraryManagement.Models
 {
@@ -72,153 +93,167 @@ namespace LibraryManagement.Models
         public int Id { get; set; }
 
         [Required]
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; set; }
+
+        [Required]
+        public string Email { get; set; }
+
+        // Navigation property: A User can have many Books
+        public ICollection<Book> BorrowedBooks { get; set; } = new List<Book>();
     }
 }
 
 
 ---
 
-📌 Step 4: Create DTOs
+2️⃣ Data Layer
 
-DTOs help in decoupling the database model from the API responses.
+AppDbContext.cs
 
-📂 DTOs/BookDTO.cs
-
-namespace LibraryManagement.DTOs
-{
-    public class BookDTO
-    {
-        public string Title { get; set; } = string.Empty;
-        public string Author { get; set; } = string.Empty;
-    }
-}
-
-
----
-
-📂 DTOs/UserDTO.cs
-
-namespace LibraryManagement.DTOs
-{
-    public class UserDTO
-    {
-        public string Name { get; set; } = string.Empty;
-    }
-}
-
-
----
-
-📌 Step 5: Configure the Database Context
-
-We'll create AppDbContext.cs in the Data/ folder.
-
-📂 Data/AppDbContext.cs
-
-using Microsoft.EntityFrameworkCore;
 using LibraryManagement.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {}
 
         public DbSet<Book> Books { get; set; }
         public DbSet<User> Users { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // Configure One-to-Many relationship
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.BorrowedBooks)
+                .WithOne(b => b.User)
+                .HasForeignKey(b => b.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        }
     }
 }
 
 
 ---
 
-📌 Step 6: Create the Controllers
+3️⃣ DTOs
 
-We'll have two controllers:
+BookDTO.cs
 
-1. BookController → Manages books.
-
-
-2. UserController → Manages users.
-
-
+namespace LibraryManagement.DTOs
+{
+    public class BookDTO
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Author { get; set; }
+        public string Publisher { get; set; }
+        public string Genre { get; set; }
+        public bool IsAvailable { get; set; }
+        public int? UserId { get; set; }
+    }
+}
 
 
 ---
 
-📂 Controllers/BookController.cs
+UserDTO.cs
 
-using Microsoft.AspNetCore.Mvc;
-using LibraryManagement.Data;
 using LibraryManagement.Models;
+using System.Collections.Generic;
+
+namespace LibraryManagement.DTOs
+{
+    public class UserDTO
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public List<BookDTO> BorrowedBooks { get; set; }
+    }
+}
+
+
+---
+
+4️⃣ Controllers
+
+BooksController.cs
+
+using LibraryManagement.Data;
 using LibraryManagement.DTOs;
+using LibraryManagement.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace LibraryManagement.Controllers
 {
-    [ApiController]
     [Route("api/books")]
-    public class BookController : ControllerBase
+    [ApiController]
+    public class BooksController : ControllerBase
     {
         private readonly AppDbContext _context;
 
-        public BookController(AppDbContext context)
+        public BooksController(AppDbContext context)
         {
             _context = context;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Book>>> GetBooks()
+        public async Task<ActionResult<IEnumerable<BookDTO>>> GetBooks()
         {
-            return await _context.Books.ToListAsync();
+            var books = await _context.Books
+                .Select(b => new BookDTO
+                {
+                    Id = b.Id,
+                    Title = b.Title,
+                    Author = b.Author,
+                    Publisher = b.Publisher,
+                    Genre = b.Genre,
+                    IsAvailable = b.IsAvailable,
+                    UserId = b.UserId
+                })
+                .ToListAsync();
+
+            return Ok(books);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Book>> GetBook(int id)
+        [HttpPost("borrow/{bookId}/user/{userId}")]
+        public async Task<IActionResult> BorrowBook(int bookId, int userId)
         {
-            var book = await _context.Books.FindAsync(id);
-            if (book == null) return NotFound();
-            return book;
-        }
+            var book = await _context.Books.FindAsync(bookId);
+            var user = await _context.Users.FindAsync(userId);
 
-        [HttpPost]
-        public async Task<ActionResult<Book>> AddBook(BookDTO bookDto)
-        {
-            var book = new Book
-            {
-                Title = bookDto.Title,
-                Author = bookDto.Author,
-                IsAvailable = true
-            };
+            if (book == null || user == null)
+                return NotFound("Book or User not found");
 
-            _context.Books.Add(book);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetBook), new { id = book.Id }, book);
-        }
+            if (!book.IsAvailable)
+                return BadRequest("Book is already borrowed");
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBook(int id, BookDTO bookDto)
-        {
-            var book = await _context.Books.FindAsync(id);
-            if (book == null) return NotFound();
-
-            book.Title = bookDto.Title;
-            book.Author = bookDto.Author;
+            book.UserId = user.Id;
+            book.IsAvailable = false;
 
             await _context.SaveChangesAsync();
-            return NoContent();
+            return Ok($"Book '{book.Title}' borrowed by {user.Name}");
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBook(int id)
+        [HttpPost("return/{bookId}")]
+        public async Task<IActionResult> ReturnBook(int bookId)
         {
-            var book = await _context.Books.FindAsync(id);
-            if (book == null) return NotFound();
+            var book = await _context.Books.FindAsync(bookId);
 
-            _context.Books.Remove(book);
+            if (book == null || book.UserId == null)
+                return NotFound("This book is not currently borrowed.");
+
+            book.UserId = null;
+            book.IsAvailable = true;
+
             await _context.SaveChangesAsync();
-            return NoContent();
+            return Ok($"Book '{book.Title}' has been returned.");
         }
     }
 }
@@ -226,44 +261,55 @@ namespace LibraryManagement.Controllers
 
 ---
 
-📂 Controllers/UserController.cs
+UsersController.cs
 
-using Microsoft.AspNetCore.Mvc;
 using LibraryManagement.Data;
-using LibraryManagement.Models;
 using LibraryManagement.DTOs;
+using LibraryManagement.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace LibraryManagement.Controllers
 {
-    [ApiController]
     [Route("api/users")]
-    public class UserController : ControllerBase
+    [ApiController]
+    public class UsersController : ControllerBase
     {
         private readonly AppDbContext _context;
 
-        public UserController(AppDbContext context)
+        public UsersController(AppDbContext context)
         {
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        [HttpGet("{id}/borrowed-books")]
+        public async Task<ActionResult<UserDTO>> GetUserWithBorrowedBooks(int id)
         {
-            return await _context.Users.ToListAsync();
-        }
+            var user = await _context.Users
+                .Include(u => u.BorrowedBooks)
+                .FirstOrDefaultAsync(u => u.Id == id);
 
-        [HttpPost]
-        public async Task<ActionResult<User>> AddUser(UserDTO userDto)
-        {
-            var user = new User
+            if (user == null) return NotFound("User not found.");
+
+            return new UserDTO
             {
-                Name = userDto.Name
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                BorrowedBooks = user.BorrowedBooks.Select(b => new BookDTO
+                {
+                    Id = b.Id,
+                    Title = b.Title,
+                    Author = b.Author,
+                    Publisher = b.Publisher,
+                    Genre = b.Genre,
+                    IsAvailable = b.IsAvailable,
+                    UserId = b.UserId
+                }).ToList()
             };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, user);
         }
     }
 }
@@ -271,42 +317,7 @@ namespace LibraryManagement.Controllers
 
 ---
 
-📌 Step 7: Configure Program.cs
-
-📂 Program.cs
-
-using LibraryManagement.Data;
-using Microsoft.EntityFrameworkCore;
-
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-var app = builder.Build();
-
-// Configure middleware
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
-app.Run();
-
-
----
-
-📌 Step 8: Run Migrations & Start API
-
-Run the following commands in the terminal:
+5️⃣ Migrations & Running
 
 dotnet ef migrations add InitialCreate
 dotnet ef database update
@@ -315,35 +326,5 @@ dotnet run
 
 ---
 
-📌 Step 9: Test the API
-
-Open Swagger: https://localhost:5001/swagger/index.html
-
-Use Postman or Swagger UI to:
-
-Add users via POST /api/users
-
-Add books via POST /api/books
-
-Get all books via GET /api/books
-
-Get a specific book via GET /api/books/{id}
-
-Update a book via PUT /api/books/{id}
-
-Delete a book via DELETE /api/books/{id}
-
-
-
-
----
-
-📌 Summary
-
-✔ Uses SQLite instead of PostgreSQL.
-✔ Implements DTOs to separate models from API requests.
-✔ Follows Clean Architecture (Controllers, Models, DTOs, DbContext).
-✔ CRUD API for Library Management System.
-
-Let me know if you need modifications or explanations! 🚀
+Now, borrowing and returning books is done directly in the Books table, keeping things simple. Let me know if you need any refinements!
 
