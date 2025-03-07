@@ -8,13 +8,6 @@ namespace LibraryManagement.DTOs
         public string Publisher { get; set; }
         public string Genre { get; set; }
         public bool IsAvailable { get; set; }
-    }
-
-    public class CreateBookDTO
-    {
-        public string Title { get; set; }
-        public string Author { get; set; }
-        public string Publisher { get; set; }
-        public string Genre { get; set; }
+        public int? UserId { get; set; }
     }
 }

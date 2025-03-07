@@ -1,13 +1,23 @@
-using Microsoft.EntityFrameworkCore;
 using LibraryManagement.Models;
-namespace LibraryManagement.Data;
+using Microsoft.EntityFrameworkCore;
 
-public class AppDbContext : DbContext
+namespace LibraryManagement.Data
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    public class AppDbContext : DbContext
+    {
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {}
 
         public DbSet<Book> Books { get; set; }
         public DbSet<User> Users { get; set; }
-        public DbSet<BorrowedBook> BorrowedBooks { get; set; }
-    
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // Configure One-to-Many relationship
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.BorrowedBooks)
+                .WithOne(b => b.User)
+                .HasForeignKey(b => b.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        }
+    }
 }

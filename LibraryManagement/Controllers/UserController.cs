@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 
 namespace LibraryManagement.Controllers
 {
-    [ApiController]
     [Route("api/users")]
+    [ApiController]
     public class UsersController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -20,37 +20,53 @@ namespace LibraryManagement.Controllers
             _context = context;
         }
 
-        // Get all users
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
-        {
-            var users = await _context.Users
-                .Select(u => new UserDTO { Id = u.Id, Name = u.Name, Email = u.Email })
-                .ToListAsync();
-
-            return Ok(users);
-        }
-
-        // Get a user by ID
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> GetUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
             if (user == null) return NotFound();
 
-            return Ok(new UserDTO { Id = user.Id, Name = user.Name, Email = user.Email });
+            return Ok(new GetUserDTO { Id = user.Id, Name = user.Name, Email = user.Email });
         }
 
-        // Register a user
         [HttpPost]
-        public async Task<ActionResult<UserDTO>> CreateUser(CreateUserDTO dto)
+        public async Task<IActionResult> AddUser(UserDTO dto)
         {
-            var user = new User { Name = dto.Name, Email = dto.Email };
-
-            _context.Users.Add(user);
+            var book = new User{
+                Name=dto.Name,
+                Email=dto.Email
+            };
+            _context.Users.Add(book);
             await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetUser),new {id=book.Id},book);
 
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        }
+
+        [HttpGet("{id}/borrowed-books")]
+        public async Task<ActionResult<UserDTO>> GetUserWithBorrowedBooks(int id)
+        {
+            var user = await _context.Users
+                .Include(u => u.BorrowedBooks)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null) return NotFound("User not found.");
+
+            return new UserDTO
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                BorrowedBooks = user.BorrowedBooks.Select(b => new BookDTO
+                {
+                    Id = b.Id,
+                    Title = b.Title,
+                    Author = b.Author,
+                    Publisher = b.Publisher,
+                    Genre = b.Genre,
+                    IsAvailable = b.IsAvailable,
+                    UserId = b.UserId
+                }).ToList()
+            };
         }
     }
 }
