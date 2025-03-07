@@ -12,6 +12,14 @@ namespace LibraryManagement.DTOs
 
     public class BorrowBookDTO
     {
+        public int Id{get; set;}
+        public int BookId { get; set; }
+        public int UserId { get; set; }
+    }
+
+    public class BorrowingBookDTO
+    {
+        //public int Id{get; set;}
         public int BookId { get; set; }
         public int UserId { get; set; }
     }

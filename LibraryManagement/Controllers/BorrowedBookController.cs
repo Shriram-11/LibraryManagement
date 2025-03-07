@@ -21,7 +21,7 @@ namespace LibraryManagement.Controllers
 
         // Borrow a book
         [HttpPost("borrow")]
-        public async Task<IActionResult> BorrowBook(BorrowBookDTO dto)
+        public async Task<IActionResult> BorrowBook(BorrowingBookDTO dto)
         {
             var book = await _context.Books.FindAsync(dto.BookId);
             var user = await _context.Users.FindAsync(dto.UserId);
@@ -34,7 +34,7 @@ namespace LibraryManagement.Controllers
 
             _context.BorrowedBooks.Add(borrowedBook);
             await _context.SaveChangesAsync();
-            return Ok();
+            return Ok(new BorrowBookDTO{Id=borrowedBook.Id,BookId=borrowedBook.Book.Id,UserId=borrowedBook.User.Id});
         }
 
         // Return a book
