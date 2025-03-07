@@ -11,6 +11,14 @@ namespace LibraryManagement.DTOs
         public List<BookDTO> BorrowedBooks { get; set; }
     }
 
+    public class AddUserDTO
+    {
+        //public int Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        //public List<BookDTO> BorrowedBooks { get; set; }
+    }
+
     public class GetUserDTO
     {
         public int Id { get; set; }

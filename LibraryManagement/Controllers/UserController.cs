@@ -30,7 +30,7 @@ namespace LibraryManagement.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUser(UserDTO dto)
+        public async Task<IActionResult> AddUser(AddUserDTO dto)
         {
             var book = new User{
                 Name=dto.Name,

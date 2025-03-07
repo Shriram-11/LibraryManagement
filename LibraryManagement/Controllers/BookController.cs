@@ -91,15 +91,15 @@ namespace LibraryManagement.Controllers
             return Ok($"Book '{book.Title}' has been returned.");
         }
         [HttpPost]
-        public async Task<IActionResult> AddBook(BookDTO dto)
+        public async Task<IActionResult> AddBook(AddBookDTO dto)
         {
             var book = new Book{
-                Title=dto.Title,
+                    Title=dto.Title,
                     Author = dto.Author,
                     Publisher = dto.Publisher,
                     Genre = dto.Genre,
                     IsAvailable = dto.IsAvailable,
-                    UserId = dto.UserId
+        
             };
             _context.Books.Add(book);
             await _context.SaveChangesAsync();
