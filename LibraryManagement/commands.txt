@@ -1,0 +1,29 @@
+[HttpPost("borrow")]
+public async Task<IActionResult> BorrowBook(BorrowingBookDTO dto)
+{
+    var book = await _context.Books.FindAsync(dto.BookId);
+    var user = await _context.Users.FindAsync(dto.UserId);
+
+    if (book == null || user == null) 
+        return NotFound("Book or User not found");
+    if (!book.IsAvailable) 
+        return BadRequest("Book is already borrowed");
+
+    var borrowedBook = new BorrowedBook 
+    { 
+        BookId = book.Id, 
+        UserId = user.Id, 
+        BorrowDate = DateTime.UtcNow 
+    };
+    book.IsAvailable = false;
+
+    _context.BorrowedBooks.Add(borrowedBook);
+    await _context.SaveChangesAsync();
+    
+    return Ok(new BorrowBookDTO 
+    { 
+        Id = borrowedBook.Id, 
+        BookId = borrowedBook.BookId, 
+        UserId = borrowedBook.UserId 
+    });
+}
