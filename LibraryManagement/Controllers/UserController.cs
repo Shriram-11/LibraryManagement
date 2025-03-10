@@ -1,6 +1,7 @@
 using LibraryManagement.Data;
 using LibraryManagement.DTOs;
 using LibraryManagement.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace LibraryManagement.Controllers
             _context = context;
         }
         [HttpGet]
+        //[Authorize(Roles = "Admin")]
         public async Task<ActionResult<GetUserDTO>> GetAll()
         {
             var users = await _context.Users
@@ -36,6 +38,7 @@ namespace LibraryManagement.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<UserDTO>> GetUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
@@ -43,7 +46,7 @@ namespace LibraryManagement.Controllers
 
             return Ok(new GetUserDTO { Id = user.Id, Name = user.Name, Email = user.Email });
         }
-
+/*
         [HttpPost]
         public async Task<IActionResult> AddUser(AddUserDTO dto)
         {
@@ -56,7 +59,7 @@ namespace LibraryManagement.Controllers
             return CreatedAtAction(nameof(GetUser),new {id=book.Id},book);
 
         }
-
+*/
         [HttpGet("{id}/borrowed-books")]
         public async Task<ActionResult<UserDTO>> GetUserWithBorrowedBooks(int id)
         {

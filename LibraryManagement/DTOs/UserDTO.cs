@@ -16,6 +16,8 @@ namespace LibraryManagement.DTOs
         //public int Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
+        public string Password {get;set;}
+        public string? Role{get;set;}
         //public List<BookDTO> BorrowedBooks { get; set; }
     }
 
@@ -24,6 +26,13 @@ namespace LibraryManagement.DTOs
         public int Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
+    
+    }
+
+    public class LoginUserDTO
+    {
+        public string Name { get; set; }
+        public string Password { get; set; }
     
     }
 }
