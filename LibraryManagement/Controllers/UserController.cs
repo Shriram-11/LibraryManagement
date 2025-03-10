@@ -83,5 +83,20 @@ namespace LibraryManagement.Controllers
                 }).ToList()
             };
         }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteUser(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user==null) return NotFound();
+            var hasBorrowedBooks=await _context.Books.AnyAsync(b=>b.UserId==id && !b.IsAvailable);
+            if (hasBorrowedBooks) return BadRequest("Must Return All Books before closing account");
+            
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+            return NoContent();
+
+            
+        }
     }
 }

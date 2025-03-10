@@ -2,6 +2,7 @@ using LibraryManagement.Data;
 using LibraryManagement.DTOs;
 using LibraryManagement.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,7 +58,7 @@ namespace LibraryManagement.Controllers
                 });
         }
 
-        [HttpPost("borrow/{bookId}/user/{userId}")]
+        [HttpPut("borrow/{bookId}/user/{userId}")]
         public async Task<IActionResult> BorrowBook(int bookId, int userId)
         {
             var book = await _context.Books.FindAsync(bookId);
@@ -76,7 +77,7 @@ namespace LibraryManagement.Controllers
             return Ok($"Book '{book.Title}' borrowed by {user.Name}");
         }
 
-        [HttpPost("return/{bookId}")]
+        [HttpPut("return/{bookId}")]
         public async Task<IActionResult> ReturnBook(int bookId)
         {
             var book = await _context.Books.FindAsync(bookId);
@@ -106,6 +107,20 @@ namespace LibraryManagement.Controllers
             return CreatedAtAction(nameof(GetBooks),new {id=book.Id},book);
 
         }
+
+       [HttpDelete("{id}")]
+       public async Task<ActionResult> DeleteBook(int id)
+       {
+            var book = await _context.Books.FindAsync(id);
+            if (book == null) return NotFound();
+
+            if (!book.IsAvailable) return BadRequest("Cannot Delete Borrowed Book. It must be returned First");
+
+            _context.Books.Remove(book);
+            await _context.SaveChangesAsync();
+            return NoContent();
+       }
+
 
     }
 }
