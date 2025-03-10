@@ -19,6 +19,21 @@ namespace LibraryManagement.Controllers
         {
             _context = context;
         }
+        [HttpGet]
+        public async Task<ActionResult<GetUserDTO>> GetAll()
+        {
+            var users = await _context.Users
+                .Select(b => new GetUserDTO
+                {
+                    Id = b.Id,
+                    Name = b.Name,
+                    Email = b.Email,
+                    //BorrowedBooks=b.BorrowedBooks;
+                })
+                .ToListAsync();
+
+            return Ok(users);
+        }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> GetUser(int id)
