@@ -5,6 +5,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +62,8 @@ builder.Services.AddSwaggerGen(c =>
             Array.Empty<string>()
         }
     });
+
+    c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "LibraryManagement.xml"));
 });
 
 // Add Database Context
@@ -70,7 +76,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Library Management API V1");
+    });
 }
 
 app.UseHttpsRedirection();
@@ -80,6 +89,6 @@ app.MapControllers();
 
 // Configure ports
 app.Urls.Clear();
-app.Urls.Add("http://localhost:4444");
+app.Urls.Add("http://localhost:5000");
 
 app.Run();

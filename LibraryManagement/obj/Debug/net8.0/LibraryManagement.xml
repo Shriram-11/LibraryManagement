@@ -1,0 +1,135 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LibraryManagement</name>
+    </assembly>
+    <members>
+        <member name="M:AuthController.Register(LibraryManagement.DTOs.AddUserDTO)">
+            <summary>
+            Register a new user.
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AuthController.Login(LibraryManagement.DTOs.LoginUserDTO)">
+            <summary>
+            Login.
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AuthController.GenerateJwtToken(LibraryManagement.Models.User)">
+            <summary>
+            Generate JWT token.
+            </summary>
+            <param name="user"></param>
+            <returns></returns>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="M:LibraryManagement.Controllers.BooksController.GetBooks">
+            <summary>
+            Get all books.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryManagement.Controllers.BooksController.GetBook(System.Int32)">
+            <summary>
+            Get a book by ID.
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryManagement.Controllers.BooksController.BorrowBook(System.Int32,System.Int32)">
+            <summary>
+                Borrow a book.
+            </summary>
+            <param name="bookId"></param>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryManagement.Controllers.BooksController.ReturnBook(System.Int32)">
+            <summary>
+            Return a borrowed book.
+            </summary>
+            <param name="bookId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryManagement.Controllers.BooksController.AddBook(LibraryManagement.DTOs.AddBookDTO)">
+            <summary>
+            Add a new book.
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryManagement.Controllers.BooksController.DeleteBook(System.Int32)">
+            <summary>
+            Remove a book.
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:LibraryManagement.Controllers.UsersController.GetAll">
+            <summary>
+            Get all users.
+            </summary>
+            <returns>List of users.</returns>
+        </member>
+        <member name="M:LibraryManagement.Controllers.UsersController.GetUser(System.Int32)">
+            <summary>
+            Get a user by ID.
+            </summary>
+            <param name="id">User ID.</param>
+            <returns>User details.</returns>
+        </member>
+        <member name="M:LibraryManagement.Controllers.UsersController.GetUserWithBorrowedBooks(System.Int32)">
+            <summary>
+            Get a user with their borrowed books.
+            </summary>
+            <param name="id">User ID.</param>
+            <returns>User details with borrowed books.</returns>
+        </member>
+        <member name="M:LibraryManagement.Controllers.UsersController.DeleteUser(System.Int32)">
+            <summary>
+            Delete a user by ID.
+            </summary>
+            <param name="id">User ID.</param>
+            <returns>Action result.</returns>
+        </member>
+        <member name="T:LibraryManagement.Migrations.InitialCreate">
+            <inheritdoc />
+        </member>
+        <member name="M:LibraryManagement.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:LibraryManagement.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:LibraryManagement.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:LibraryManagement.Migrations.NewMig">
+            <inheritdoc />
+        </member>
+        <member name="M:LibraryManagement.Migrations.NewMig.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:LibraryManagement.Migrations.NewMig.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:LibraryManagement.Migrations.NewMig.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:LibraryManagement.Migrations.UpdateDatabaseSchema">
+            <inheritdoc />
+        </member>
+        <member name="M:LibraryManagement.Migrations.UpdateDatabaseSchema.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:LibraryManagement.Migrations.UpdateDatabaseSchema.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:LibraryManagement.Migrations.UpdateDatabaseSchema.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>
