@@ -25,7 +25,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = config["JwtSettings:Issuer"], // Change this to your actual issuer
             ValidAudience = config["JwtSettings:Audience"], // Change this to your actual audience
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:Key"])) // Replace with your actual secret key
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:Key"] ?? throw new ArgumentNullException("JwtSettings:Key"))) // Replace with your actual secret key
         };
     });
 builder.Services.AddAuthorization();

@@ -20,6 +20,11 @@ public class AuthController : ControllerBase
         _context = context;
         _config = config;
     }
+    /// <summary>
+    /// Register a new user.
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(AddUserDTO dto)
@@ -39,18 +44,27 @@ public class AuthController : ControllerBase
         await _context.SaveChangesAsync();
         return Ok("User registered.");
     }
-
+    /// <summary>
+    /// Login.
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginUserDTO dto)
     {
-        var user = _context.Users.FirstOrDefault(u => u.Password == dto.Password);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Password == dto.Password);
         if (user == null || !(dto.Password==user.Password))
             return Unauthorized("Invalid credentials.");
 
         var token = GenerateJwtToken(user);
         return Ok(new { Token = token });
     }
-
+    /// <summary>
+    /// Generate JWT token.
+    /// </summary>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     private string GenerateJwtToken(User user)
     {
         var claims = new List<Claim>
@@ -60,7 +74,12 @@ public class AuthController : ControllerBase
             new Claim(ClaimTypes.Role, user.Role)
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:Key"]));
+        var jwtKey = _config["JwtSettings:Key"];
+        if (string.IsNullOrEmpty(jwtKey))
+        {
+            throw new InvalidOperationException("JWT key is not configured.");
+        }
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var tokenDescriptor = new JwtSecurityToken(
             issuer: _config["JwtSettings:Issuer"],

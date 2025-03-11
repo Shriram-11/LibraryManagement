@@ -20,8 +20,12 @@ namespace LibraryManagement.Controllers
         {
             _context = context;
         }
+
+        /// <summary>
+        /// Get all users.
+        /// </summary>
+        /// <returns>List of users.</returns>
         [HttpGet]
-        //[Authorize(Roles = "Admin")]
         public async Task<ActionResult<GetUserDTO>> GetAll()
         {
             var users = await _context.Users
@@ -30,13 +34,18 @@ namespace LibraryManagement.Controllers
                     Id = b.Id,
                     Name = b.Name,
                     Email = b.Email,
-                    //BorrowedBooks=b.BorrowedBooks;
+                    // BorrowedBooks = b.BorrowedBooks;
                 })
                 .ToListAsync();
 
             return Ok(users);
         }
 
+        /// <summary>
+        /// Get a user by ID.
+        /// </summary>
+        /// <param name="id">User ID.</param>
+        /// <returns>User details.</returns>
         [HttpGet("{id}")]
         [Authorize]
         public async Task<ActionResult<UserDTO>> GetUser(int id)
@@ -46,21 +55,33 @@ namespace LibraryManagement.Controllers
 
             return Ok(new GetUserDTO { Id = user.Id, Name = user.Name, Email = user.Email });
         }
-/*
+
+        /*
+        /// <summary>
+        /// Add a new user.
+        /// </summary>
+        /// <param name="dto">User data transfer object.</param>
+        /// <returns>Action result.</returns>
         [HttpPost]
         public async Task<IActionResult> AddUser(AddUserDTO dto)
         {
-            var book = new User{
-                Name=dto.Name,
-                Email=dto.Email
+            var user = new User{
+                Name = dto.Name,
+                Email = dto.Email
             };
-            _context.Users.Add(book);
+            _context.Users.Add(user);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetUser),new {id=book.Id},book);
-
+            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
         }
-*/
+        */
+
+        /// <summary>
+        /// Get a user with their borrowed books.
+        /// </summary>
+        /// <param name="id">User ID.</param>
+        /// <returns>User details with borrowed books.</returns>
         [HttpGet("{id}/borrowed-books")]
+        [Authorize]
         public async Task<ActionResult<UserDTO>> GetUserWithBorrowedBooks(int id)
         {
             var user = await _context.Users
@@ -87,19 +108,24 @@ namespace LibraryManagement.Controllers
             };
         }
 
+        /// <summary>
+        /// Delete a user by ID.
+        /// </summary>
+        /// <param name="id">User ID.</param>
+        /// <returns>Action result.</returns>
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<ActionResult> DeleteUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
-            if (user==null) return NotFound();
-            var hasBorrowedBooks=await _context.Books.AnyAsync(b=>b.UserId==id && !b.IsAvailable);
-            if (hasBorrowedBooks) return BadRequest("Must Return All Books before closing account");
-            
+            if (user == null) return NotFound();
+
+            var hasBorrowedBooks = await _context.Books.AnyAsync(b => b.UserId == id && !b.IsAvailable);
+            if (hasBorrowedBooks) return BadRequest("Must return all books before closing account");
+
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
             return NoContent();
-
-            
         }
     }
 }

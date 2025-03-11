@@ -1,6 +1,7 @@
 using LibraryManagement.Data;
 using LibraryManagement.DTOs;
 using LibraryManagement.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +21,10 @@ namespace LibraryManagement.Controllers
         {
             _context = context;
         }
-
+        /// <summary>
+        /// Get all books.
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BookDTO>>> GetBooks()
         {
@@ -39,7 +43,11 @@ namespace LibraryManagement.Controllers
 
             return Ok(books);
         }
-
+        /// <summary>
+        /// Get a book by ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> GetBook(int id)
         {
@@ -57,8 +65,14 @@ namespace LibraryManagement.Controllers
                     UserId = b.UserId
                 });
         }
-
+        /// <summary>
+        ///     Borrow a book.
+        /// </summary>
+        /// <param name="bookId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         [HttpPut("borrow/{bookId}/user/{userId}")]
+        [Authorize]
         public async Task<IActionResult> BorrowBook(int bookId, int userId)
         {
             var book = await _context.Books.FindAsync(bookId);
@@ -75,8 +89,13 @@ namespace LibraryManagement.Controllers
 
             await _context.SaveChangesAsync();
             return Ok($"Book '{book.Title}' borrowed by {user.Name}");
-        }
+        }   
 
+        /// <summary>
+        /// Return a borrowed book.
+        /// </summary>
+        /// <param name="bookId"></param>
+        /// <returns></returns>
         [HttpPut("return/{bookId}")]
         public async Task<IActionResult> ReturnBook(int bookId)
         {
@@ -91,7 +110,13 @@ namespace LibraryManagement.Controllers
             await _context.SaveChangesAsync();
             return Ok($"Book '{book.Title}' has been returned.");
         }
+        /// <summary>
+        /// Add a new book.
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddBook(AddBookDTO dto)
         {
             var book = new Book{
@@ -107,8 +132,13 @@ namespace LibraryManagement.Controllers
             return CreatedAtAction(nameof(GetBooks),new {id=book.Id},book);
 
         }
-
+        /// <summary>
+        /// Remove a book.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
        [HttpDelete("{id}")]
+       [Authorize(Roles = "Admin")]
        public async Task<ActionResult> DeleteBook(int id)
        {
             var book = await _context.Books.FindAsync(id);
